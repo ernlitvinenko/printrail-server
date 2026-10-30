@@ -1,14 +1,13 @@
 import asyncio
 from logging.config import fileConfig
 
-from sqlalchemy import Connection
-from sqlalchemy import pool
-
-from alembic import context
+from sqlalchemy import Connection, pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+from alembic import context
 from core.environment import Config
 from core.models.database import Base
+from core.models.database.migrations import process_revision_directives
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -57,7 +56,7 @@ def run_migrations_offline() -> None:
 
 def do_run_migrations(connection: Connection) -> None:
     """Синхронный callback для контекста Alembic."""
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(connection=connection, target_metadata=target_metadata, process_revision_directives=process_revision_directives)
 
     with context.begin_transaction():
         context.run_migrations()

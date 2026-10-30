@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from sqlalchemy import MetaData, func, DateTime
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import DateTime, MetaData, func
+from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column
 from sqlalchemy.sql import expression
 
 _convention = {
@@ -15,10 +15,25 @@ _convention = {
 # Attach convention to the metadata object
 metadata_obj = MetaData(naming_convention=_convention)
 
+
 class Base(DeclarativeBase):
     metadata = metadata_obj
 
+
 class ServiceFieldsMixin:
-    is_del: Mapped[bool] = mapped_column(server_default=expression.false(), nullable=False, comment="Пометка удаления")
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False, comment="Дата создания")
-    modified_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    is_del: Mapped[bool] = mapped_column(
+        server_default=expression.false(), nullable=False, comment="Пометка удаления"
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+        comment="Дата создания",
+    )
+    modified_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    @declared_attr
+    def __table_args__(cls) -> dict:
+        return {"info": {"has_audit_trigger": True}}
