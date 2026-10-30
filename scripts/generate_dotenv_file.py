@@ -38,4 +38,4 @@ for idx, file in enumerate([DOTENV_SAMPLE_FILE, ENV_FILE]):
             if idx == 0 or value is None:
                 f.write(f"{key}={val["example"]}\n")
                 continue
-            f.write(f"{key}={value}")
+            f.write(f"{key}={value}\n")
