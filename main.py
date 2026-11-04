@@ -1,11 +1,16 @@
 import asyncio
 
+import click
 import uvicorn
 from fastapi import FastAPI
 
 from core.environment import Config
+from core.handlers import router
 
 app = FastAPI()
+
+
+app.include_router(router)
 
 
 async def main():
@@ -20,5 +25,41 @@ async def main():
     await server.serve()
 
 
-if __name__ == "__main__":
+@click.group()
+def cli():
+    pass
+
+
+@click.command()
+def runserver():
     asyncio.run(main())
+
+
+@click.command()
+def generate_secret_key():
+    from core.scripts.generate_secret_key import generate_secret_key
+
+    generate_secret_key()
+
+
+@click.command()
+def generate_dotenv():
+    from core.scripts.generate_dotenv_file import generate_dotenv_files
+
+    generate_dotenv_files()
+
+
+@click.command("genuser")
+def gen_user():
+    from core.scripts.add_user import gen_user
+
+    gen_user()
+
+
+cli.add_command(runserver)
+cli.add_command(generate_dotenv)
+cli.add_command(generate_secret_key)
+cli.add_command(gen_user)
+
+if __name__ == "__main__":
+    cli()
