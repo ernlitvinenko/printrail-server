@@ -5,7 +5,7 @@ from pathlib import Path
 
 def generate_dotenv_files():
     environment_core_module_path = Path(__file__).parent.parent / Path(
-        "core/environment/environment.py"
+        "environment/environment.py"
     )
     module_name = environment_core_module_path.stem
 

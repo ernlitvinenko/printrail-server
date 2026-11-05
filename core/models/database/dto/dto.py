@@ -16,6 +16,7 @@ class JobPositionCreateDict(TypedDict):
 
 
 class EmployeeCreateDict(TypedDict):
+    id: NotRequired[int]
     full_name: str
     subsection: NotRequired[str]
     position_id: int
@@ -37,6 +38,7 @@ class ContactInfoCreateDict(TypedDict):
 
 
 class AccountCreateDict(TypedDict):
+    id: NotRequired[int]
     employee_id: int
     login: str
     password: str

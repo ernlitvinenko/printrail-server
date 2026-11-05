@@ -15,5 +15,7 @@ class _Settings(BaseSettings):
     JWT_REFRESH_LIFETIME_DAYS: int = Field(default=30, examples=[30])
     HOST: str = Field(default="0.0.0.0", examples=["0.0.0.0"])
     PORT: int = Field(default=8000, examples=["8000"])
+    ADMIN_EMAIL: str = Field(examples=["admin@example.com"])
+    ADMIN_PASSWORD: str = Field(examples=["admin_secret_password"])
 
     model_config = SettingsConfigDict(env_file=ENV_FILE)

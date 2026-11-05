@@ -4,16 +4,15 @@ import click
 import uvicorn
 from fastapi import FastAPI
 
-from core.environment import Config
-from core.handlers import router
-
 app = FastAPI()
 
 
-app.include_router(router)
-
-
 async def main():
+    from core.environment import Config
+    from core.handlers import router
+
+    app.include_router(router)
+
     uvicorn_config = uvicorn.Config(
         app="main:app",
         host=Config.HOST,
@@ -51,9 +50,9 @@ def generate_dotenv():
 
 @click.command("genuser")
 def gen_user():
-    from core.scripts.add_user import gen_user
+    from core.scripts.add_user import gen_superuser
 
-    gen_user()
+    gen_superuser()
 
 
 cli.add_command(runserver)
