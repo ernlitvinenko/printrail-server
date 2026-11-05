@@ -15,3 +15,9 @@ wheels/
 .gocache
 .gopath
 .pre-commit-store
+
+# test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+ci-db.sqlite3
