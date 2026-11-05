@@ -25,9 +25,16 @@ def setup_postgres_settings[**P, R, SelfT: _BaseStorage](
 
     @wraps(func)
     async def wrapper(self: SelfT, *args: P.args, **kwargs: P.kwargs) -> R:
-        await self.session.execute(
-            text(f"SELECT set_config('app.current_user', '{self.username}', true)")
-        )
+        if (
+            self.username is not None
+            and self.session.bind is not None
+            and self.session.bind.dialect.name != "sqlite"
+        ):
+            # PostgreSQL: set per-transaction user for audit triggers.
+            # SQLite (tests): no set_config — audit attribution is PG-only.
+            await self.session.execute(
+                text(f"SELECT set_config('app.current_user', '{self.username}', true)")
+            )
         return await func(self, *args, **kwargs)
 
     return wrapper
