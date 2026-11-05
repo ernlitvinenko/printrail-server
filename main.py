@@ -4,14 +4,14 @@ import click
 import uvicorn
 from fastapi import FastAPI
 
+from core.handlers import router
+
 app = FastAPI()
+app.include_router(router)
 
 
 async def main():
     from core.environment import Config
-    from core.handlers import router
-
-    app.include_router(router)
 
     uvicorn_config = uvicorn.Config(
         app="main:app",

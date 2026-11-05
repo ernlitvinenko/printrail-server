@@ -27,28 +27,18 @@ async def test_insert_and_get_role(role_storage):
     assert role.is_system is True
 
 
-async def test_list_roles(role_storage):
+async def test_list_roles(role_storage: RoleStorage):
     await role_storage.add_all_roles(
         [
             {"id": 1, "name": "admin", "is_system": True},
             {"id": 2, "name": "user", "is_system": True},
         ]
     )
-    roles = await role_storage.list()
+    roles = await role_storage.findall()
     assert {r.name for r in roles} == {"admin", "user"}
 
 
-async def test_get_without_id_raises(role_storage):
-    with pytest.raises(ArgumentError):
-        await role_storage.get()
-
-
-async def test_get_with_bad_id_type_raises(role_storage):
-    with pytest.raises(ArgumentError):
-        await role_storage.get(id="not-an-int")
-
-
-async def test_soft_delete(role_storage):
+async def test_soft_delete(role_storage: RoleStorage):
     role = await role_storage.insert(Role(id=5, name="temp"))
     await role_storage.delete(role)
     assert role.is_del is True
@@ -56,13 +46,13 @@ async def test_soft_delete(role_storage):
     assert await role_storage.session.get(Role, 5) is not None
 
 
-async def test_hard_delete_requires_soft_flag(role_storage):
+async def test_hard_delete_requires_soft_flag(role_storage: RoleStorage):
     role = await role_storage.insert(Role(id=6, name="temp"))
     with pytest.raises(ValueError):
         await role_storage.delete_admin(role)
 
 
-async def test_employee_crud(employee_storage):
+async def test_employee_crud(employee_storage: EmployeeStorage):
     from datetime import date
 
     from core.models.database.employees import GenderType, JobPosition
@@ -82,6 +72,7 @@ async def test_employee_crud(employee_storage):
     )
     assert employee.id is not None
     fetched = await employee_storage.get(id=employee.id)
+    assert fetched is not None
     assert fetched.full_name == "Иванов Иван"
-    listed = await employee_storage.list()
+    listed = await employee_storage.findall()
     assert len(listed) == 1

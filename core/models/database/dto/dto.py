@@ -52,6 +52,7 @@ class RefreshTokenCreateDict(TypedDict):
 
 
 class RoleCreateDict(TypedDict):
+    id: NotRequired[int]
     name: str
     is_system: NotRequired[bool]
     is_del: NotRequired[bool]
