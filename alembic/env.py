@@ -2,6 +2,7 @@ import asyncio
 from logging.config import fileConfig
 
 from sqlalchemy import Connection, pool
+from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
@@ -29,7 +30,13 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-config.set_main_option("sqlalchemy.url", Config.DATABASE_URL)
+database_url = make_url(Config.DATABASE_URL)
+if database_url.drivername == "sqlite":
+    database_url = database_url.set(drivername="sqlite+aiosqlite")
+elif database_url.drivername in {"postgresql", "postgres", "asyncpg"}:
+    database_url = database_url.set(drivername="postgresql+asyncpg")
+
+config.set_main_option("sqlalchemy.url", database_url.render_as_string(hide_password=False))
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
