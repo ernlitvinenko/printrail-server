@@ -6,6 +6,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.162+-009688.svg)](https://fastapi.tiangolo.com/)
 [![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.x-red.svg)](https://www.sqlalchemy.org/)
 [![License](https://img.shields.io/badge/license-Elastic--2.0-blue.svg)](LICENSE)
+[![CI](https://github.com/ernlitvinenko/PrintCRM-server/actions/workflows/ci.yml/badge.svg)](https://github.com/ernlitvinenko/PrintCRM-server/actions/workflows/ci.yml)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-261230.svg)](https://github.com/astral-sh/ruff)
 
 **Printrail** — self-hosted, async FastAPI backend for print shops and printing companies:
@@ -115,6 +116,29 @@ alembic/              # migrations + audit-trigger injection hook
    storage layer sets on every write) into `audit_log`.
 
 No application code needs to remember to log — the database enforces it.
+
+---
+
+## 🧪 Testing
+
+```bash
+uv sync --all-groups        # installs pytest, pytest-asyncio, aiosqlite, httpx
+uv run pytest -v
+```
+
+Tests run against **in-memory SQLite** — no external services required. The suite covers:
+
+- JWT creation/verification (incl. expiry rejection)
+- bcrypt password hashing
+- Storage layer CRUD, soft/hard delete semantics and kwargs validation
+- Alembic audit-trigger generation logic
+- API routing smoke tests (routes registered, OpenAPI schema intact)
+
+CI (`.github/workflows/ci.yml`) runs on every push/PR:
+
+1. **Lint** — `ruff check` + `ruff format --check`
+2. **Secrets** — gitleaks scan of the full history
+3. **Tests** — pytest matrix over Python 3.12/3.13 × SQLite/PostgreSQL (with Alembic migrations applied against the real Postgres service)
 
 ---
 

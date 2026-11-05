@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv sync --all-groups
+
+      - name: Ruff check
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+  secrets:
+    name: Secrets (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  test:
+    name: Tests (py${{ matrix.python-version }}, ${{ matrix.db.name }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+        db:
+          - name: sqlite
+          - name: postgres
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: printrail
+          POSTGRES_PASSWORD: printrail
+          POSTGRES_DB: printrail_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U printrail"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      SECRET_KEY: ci-secret-key-not-for-production
+      ENVIRONMENT: dev
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --all-groups
+
+      - name: Configure DATABASE_URL (postgres)
+        if: matrix.db.name == 'postgres'
+        run: echo "DATABASE_URL=postgresql://printrail:printrail@localhost:5432/printrail_test" >> "$GITHUB_ENV"
+
+      - name: Configure DATABASE_URL (sqlite)
+        if: matrix.db.name == 'sqlite'
+        run: echo "DATABASE_URL=sqlite:///ci-db.sqlite3" >> "$GITHUB_ENV"
+
+      - name: Apply migrations
+        run: uv run alembic upgrade head
+
+      - name: Run tests
+        run: uv run pytest -v --tb=short
+
+      - name: Upload coverage
+        if: matrix.python-version == '3.12' && matrix.db.name == 'postgres'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: .coverage
+          if-no-files-found: ignore
