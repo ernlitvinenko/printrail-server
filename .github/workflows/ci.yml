@@ -87,7 +87,7 @@ jobs:
 
       - name: Configure DATABASE_URL (postgres)
         if: matrix.db.name == 'postgres'
-        run: echo "DATABASE_URL=postgresql://printrail:printrail@localhost:5432/printrail_test" >> "$GITHUB_ENV"
+        run: echo "DATABASE_URL=postgresql+asyncpg://printrail:printrail@localhost:5432/printrail_test" >> "$GITHUB_ENV"
 
       - name: Configure DATABASE_URL (sqlite)
         if: matrix.db.name == 'sqlite'
