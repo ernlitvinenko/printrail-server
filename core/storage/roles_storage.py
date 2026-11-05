@@ -1,38 +1,33 @@
-from typing import TypedDict, Unpack
+from collections.abc import Sequence
+from typing import Any, Unpack, overload
 
 from sqlalchemy import select
 
 from core.models.database.account import Role
 
-from .base_storage import ArgumentError, _BaseStorage
-
-
-class _GetKwargsType(TypedDict):
-    id: int
-
-
-class RoleDict(TypedDict):
-    id: int
-    name: str
-    is_system: bool | None
-    is_del: bool | None
+from ..models.database.dto.dto import RoleCreateDict
+from .base_storage import _BaseStorage
 
 
 class RoleStorage(_BaseStorage[Role]):
-    async def list(self, **kwargs) -> list[Role]:
+    _model_cls = Role
+
+    async def findall(self, **kwargs) -> Sequence[Role]:
         roles = (await self.session.scalars(select(Role))).all()
         return list(roles)
 
-    async def get(self, **kwargs: Unpack[_GetKwargsType]) -> Role | None:
-        role_id = kwargs.get("id", None)
-        if role_id is None:
-            raise ArgumentError("keyword argument `id` should be proivided")
-        if not isinstance(role_id, int):
-            raise ArgumentError("Argument `id` should be valid integer")
+    @overload
+    async def insert(self, item: Role, /) -> Role: ...
 
-        return await self.session.get(Role, role_id)
+    @overload
+    async def insert(self, **data: Unpack[RoleCreateDict]) -> Role: ...
 
-    async def add_all_roles(self, roles: list[RoleDict] | list[Role]):
+    async def insert(self, item: object | None = None, **data: Any) -> Role:
+        if item is not None and not isinstance(item, Role):
+            raise TypeError("item must be a Role instance")
+        return await self._insert(item, **data)
+
+    async def add_all_roles(self, roles: Sequence[RoleCreateDict | Role]) -> None:
         if len(roles) == 0:
             return
 

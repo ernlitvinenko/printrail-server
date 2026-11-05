@@ -1,15 +1,17 @@
-from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable
 from functools import wraps
-from typing import Concatenate, Protocol
+from typing import (
+    Any,
+    Concatenate,
+    Protocol,
+)
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Mapped
 from sqlalchemy.sql import text
 
 
 class _SqlalchemyModel(Protocol):
-    is_del: Mapped[bool]
+    is_del: bool
 
 
 class ArgumentError(Exception):
@@ -40,7 +42,9 @@ def setup_postgres_settings[**P, R, SelfT: _BaseStorage](
     return wrapper
 
 
-class _BaseStorage[T: _SqlalchemyModel](ABC):
+class _BaseStorage[T: _SqlalchemyModel]:
+    _model_cls: type[T]
+
     def __init__(self, session: AsyncSession, username: str | None = None) -> None:
         super().__init__()
         self._session = session
@@ -50,23 +54,26 @@ class _BaseStorage[T: _SqlalchemyModel](ABC):
     def session(self):
         return self._session
 
-    @abstractmethod
-    async def list(self, **kwargs) -> list[T]:
-        """
-        Возвращает список элементов класса
-        """
-
-    @abstractmethod
-    async def get(self, **kwargs) -> T | None:
+    async def get(self, id: int) -> T | None:
         """
         Возвращает элемент по признакам
         """
+        return await self.session.get(self._model_cls, id)
 
     @setup_postgres_settings
-    async def insert(self, item: T) -> T:
-        """
-        Добавляет элемент в Базу данных
-        """
+    async def _insert(self, item: T | None = None, **data: Any) -> T:
+        if all([item is not None, data]):
+            raise ValueError("Нельзя одновременно передавать инстанс и kwargs")
+
+        if item:
+            entity = item
+        else:
+            entity = self._model_cls(**data)
+
+        return await self._insert_instance(entity)
+
+    @setup_postgres_settings
+    async def _insert_instance(self, item: T) -> T:
         self.session.add(item)
         await self.session.flush()
         return item
