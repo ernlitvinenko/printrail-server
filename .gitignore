@@ -10,3 +10,8 @@ wheels/
 .venv
 .idea
 .env
+
+# pre-commit-cache
+.gocache
+.gopath
+.pre-commit-store
