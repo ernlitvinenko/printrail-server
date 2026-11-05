@@ -1,29 +1,44 @@
 import secrets
 import string
 from dataclasses import dataclass
-from typing import Annotated
+from datetime import datetime, timedelta
+from typing import Annotated, Any
 
 import bcrypt
+import jwt
 from fastapi import Header
 
-# @dataclass
-# class TokenData:
-#     sub: int
-#     token_type: Literal[]
-#     exp: datetime
-#     iat: datetime
-#     jti: int | None = None
-#
-# async def generate_access_token(user: Account):
-#     token_payload = TokenData(sub=user.id, exp=get_current_dt() + timedelta(minutes=Config.JWT_TOKEN_LIFETIME_MINUTES), iat=get_current_dt())
-#
-#     # TODO change uuid and write it into database.
-#     refresh_token_payload = TokenData(sub=user.id, exp=get_current_dt() + timedelta(minutes=Config.JWT_TOKEN_LIFETIME_MINUTES), iat=get_current_dt())
-#     access_token = jwt.encode({key: val for key, val in asdict(token_payload).items() if val is not None}, key=Config.SECRET_KEY, algorithm="HS256")
-#
-# # DEPENDS
-#
-#
+from core.environment import Config
+from core.helpers.dtime import get_current_dt
+
+ALGORITHM = "HS256"
+
+
+@dataclass
+class TokenData:
+    sub: int
+    type: str
+    exp: datetime
+    iat: datetime
+
+
+def create_access_token(sub: int, expires_delta_seconds: int | None = None) -> str:
+    """Create a signed JWT access token for the given account id."""
+    if expires_delta_seconds is None:
+        expires_delta_seconds = Config.JWT_TOKEN_LIFETIME_MINUTES * 60
+    now = get_current_dt()
+    payload = {
+        "sub": str(sub),
+        "type": "access",
+        "iat": now,
+        "exp": now + timedelta(seconds=expires_delta_seconds),
+    }
+    return jwt.encode(payload, Config.SECRET_KEY, algorithm=ALGORITHM)
+
+
+def decode_token(token: str) -> dict[str, Any]:
+    """Decode and verify a JWT. Raises jwt.InvalidTokenError subclasses on failure."""
+    return jwt.decode(token, Config.SECRET_KEY, algorithms=[ALGORITHM])
 
 
 @dataclass
