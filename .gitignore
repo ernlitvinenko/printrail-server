@@ -21,3 +21,6 @@ wheels/
 .coverage
 htmlcov/
 ci-db.sqlite3
+
+# ruff cache
+.ruff_cache
