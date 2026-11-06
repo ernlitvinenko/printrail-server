@@ -84,9 +84,11 @@ def generate_typeddicts(
         fields_written = False
 
         for col in mapper.columns:
-            # Пропускаем автоинкрементный ID
+            # Устанавливаем флаг primary or autoincremented на False для остслеживания первичный ключ это ключ или нет
+            primary_or_autoinсremented = False
+
             if col.primary_key and col.autoincrement:
-                continue
+                primary_or_autoinсremented = True
 
             attr_name = col.key
             hint = type_hints.get(attr_name, Any)
@@ -99,9 +101,9 @@ def generate_typeddicts(
 
             type_repr = format_type_name(hint)
 
-            # Проверка на опциональность (nullable или наличие дефолта)
+            # Проверка на опциональность (nullable | наличие дефолта | первичный ключ | самоустанавливающийся (autoincremented) )
             has_default = (col.default is not None) or (col.server_default is not None)
-            is_optional = col.nullable or has_default
+            is_optional = col.nullable or has_default or primary_or_autoinсremented
 
             if is_optional:
                 class_lines.append(f"    {attr_name}: NotRequired[{type_repr}]")
@@ -142,6 +144,13 @@ def generate_typeddicts(
 
 
 if __name__ == "__main__":
-    path = Path(__file__).parent.parent / "models" / "database" / "dto" / "dto.py"
+    path = (
+        Path(__file__).parent.parent
+        / "models"
+        / "database"
+        / "dto"
+        / "typedict"
+        / "dto.py"
+    )
 
     generate_typeddicts(Base, output_path=path)

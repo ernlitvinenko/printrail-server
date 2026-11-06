@@ -5,7 +5,7 @@ from sqlalchemy import select
 
 from core.models.database.account import Role
 
-from ..models.database.dto.dto import RoleCreateDict
+from ..models.database.dto.typedict.dto import RoleCreateDict
 from .base_storage import _BaseStorage
 
 

@@ -31,8 +31,8 @@ class TestJWT:
 
         token = create_access_token(sub=42)
         payload = decode_token(token)
-        assert payload["sub"] == "42"
-        assert payload["type"] == "access"
+        assert payload.sub == 42
+        assert payload.type == "access"
 
     def test_expired_token_rejected(self):
         import pytest

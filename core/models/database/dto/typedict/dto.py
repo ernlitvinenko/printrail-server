@@ -9,6 +9,7 @@ from core.models.database.employees import ContactInfoType, GenderType
 
 
 class JobPositionCreateDict(TypedDict):
+    id: NotRequired[int]
     name: str
     is_del: NotRequired[bool]
     created_at: NotRequired[datetime]
@@ -30,6 +31,7 @@ class EmployeeCreateDict(TypedDict):
 
 
 class ContactInfoCreateDict(TypedDict):
+    id: NotRequired[int]
     type: ContactInfoType
     data: str
     is_del: NotRequired[bool]
@@ -49,6 +51,7 @@ class AccountCreateDict(TypedDict):
 
 class RefreshTokenCreateDict(TypedDict):
     refresh_token: str
+    account_id: NotRequired[int]
 
 
 class RoleCreateDict(TypedDict):
@@ -61,6 +64,7 @@ class RoleCreateDict(TypedDict):
 
 
 class AuditLogCreateDict(TypedDict):
+    id: NotRequired[int]
     table_name: str
     action: AuditAction
     row_id: str

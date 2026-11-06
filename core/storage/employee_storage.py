@@ -4,7 +4,7 @@ from typing import Any, Unpack, overload
 from sqlalchemy import select
 
 from core.models.database.account import Employee
-from core.models.database.dto.dto import EmployeeCreateDict
+from core.models.database.dto.typedict.dto import EmployeeCreateDict
 
 from .base_storage import _BaseStorage
 

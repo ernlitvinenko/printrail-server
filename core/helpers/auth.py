@@ -2,7 +2,7 @@ import secrets
 import string
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Annotated, Any
+from typing import Annotated
 
 import bcrypt
 import jwt
@@ -36,9 +36,15 @@ def create_access_token(sub: int, expires_delta_seconds: int | None = None) -> s
     return jwt.encode(payload, Config.SECRET_KEY, algorithm=ALGORITHM)
 
 
-def decode_token(token: str) -> dict[str, Any]:
+def decode_token(token: str) -> TokenData:
     """Decode and verify a JWT. Raises jwt.InvalidTokenError subclasses on failure."""
-    return jwt.decode(token, Config.SECRET_KEY, algorithms=[ALGORITHM])
+    token_data = jwt.decode(token, Config.SECRET_KEY, algorithms=[ALGORITHM])
+    return TokenData(
+        sub=int(token_data["sub"]),
+        type=token_data["type"],
+        iat=token_data["iat"],
+        exp=token_data["exp"],
+    )
 
 
 @dataclass
