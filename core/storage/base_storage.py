@@ -51,7 +51,7 @@ class _BaseStorage[T: _SqlalchemyModel]:
         self.username = username
 
     @property
-    def session(self):
+    def session(self) -> AsyncSession:
         return self._session
 
     async def get(self, id: int) -> T | None:
@@ -59,6 +59,9 @@ class _BaseStorage[T: _SqlalchemyModel]:
         Возвращает элемент по признакам
         """
         return await self.session.get(self._model_cls, id)
+
+    def set_username(self, username: str) -> None:
+        self.username = username
 
     @setup_postgres_settings
     async def _insert(self, item: T | None = None, **data: Any) -> T:

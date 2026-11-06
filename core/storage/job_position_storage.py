@@ -2,7 +2,7 @@ from typing import Any, Unpack, overload
 
 from sqlalchemy import select
 
-from core.models.database.dto.dto import JobPositionCreateDict
+from core.models.database.dto.typedict.dto import JobPositionCreateDict
 from core.models.database.employees import JobPosition
 from core.storage.base_storage import _BaseStorage
 
